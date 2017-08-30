@@ -1,0 +1,26 @@
+# Site settings
+title: "Robert Erdin"
+description: > 
+  Occasional posts about CS and software engineering
+
+author: Robert Erdin
+email: robert.erdin@gmail.com
+twitter_username:
+github_username: roberterdin
+
+baseurl: "" # the subpath of your site, e.g. /blog
+# url: "http://127.0.0.1" # the base hostname & protocol for your site
+
+google_analytics_id: UA-1111111111-1
+disqus_id:
+
+# Build settings
+include: [_pages]
+markdown: kramdown
+permalink: /:year/:month/:title
+
+sass:
+    style: compressed
+
+exclude: [vendor]
+
