@@ -7,6 +7,25 @@ tags: test, style
 comments: true
 ---
 
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+<p align="center">
+  <img src="https://deadbeef.me/paper-jekyll-theme/assets/paper-cover-photo.png">
+  <p align="center">
+     A minimalistic Jekyll Theme
+     <br>
+     <br>
+     <a class="no-hov" href="https://travis-ci.org/mkchoi212/paper-jekyll-theme"><img src="https://travis-ci.org/mkchoi212/paper-jekyll-theme.svg?branch=master"></a>
+     <a class="no-hov" href="https://raw.githubusercontent.com/mkchoi212/paper-jekyll-theme/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+     <br><br>
+     <a class="github-button" href="https://github.com/mkchoi212/paper-jekyll-theme" data-size="large" data-show-count="true" aria-label="Star mkchoi212/paper-jekyll-theme on GitHub">Stars</a>
+  </p>
+</p>
+<br>
+
+Paper is a minimal Jekyll theme. Perfect for hosting your personal site, blog, or portfolio on GitHub or self-hosting on your own server. The styling is purposely minimalistic so that you can add your own flare to the website.
+
 Below is just about everything you'll need to style in the theme. Check the source code to see the many embedded elements within paragraphs.
 
 ---
@@ -38,6 +57,12 @@ Below is just about everything you'll need to style in the theme. Check the sour
 ## 2. Body Text
 
 Lorem ipsum dolor sit amet, [test link](https://www.google.com) adipiscing elit. **This is strong.** Nullam dignissim convallis est. Quisque aliquam. *This is emphasized.* Donec faucibus. Nunc iaculis suscipit dui. 5<sup>3</sup> = 125. Water is H<sub>2</sub>O. Nam sit amet sem. Aliquam libero nisi, imperdiet at, tincidunt nec, gravida vehicula, nisl. <u>Underline</u>. Maecenas ornare tortor. Donec sed tellus eget `COPY filename` sapien fringilla nonummy. Mauris a ante. Suspendisse quam sem, consequat at, <del>Dinner’s at 5:00.</del> commodo vitae, feugiat in, nunc. Morbi imperdiet augue <mark>mark element</mark> quis tellus.
+
+## 2.1 References
+
+Syntax highlighting is a feature that displays source code, in different colors and fonts according to the category of terms. This feature facilitates writing in a structured language such as a programming language or a markup language as both structures and syntax errors are visually distinct. Highlighting does not affect the meaning of the text itself; it is intended only for human readers.[^1]
+
+[^1]: <http://en.wikipedia.org/wiki/Syntax_highlighting>
 
 ## 3. Images
 
