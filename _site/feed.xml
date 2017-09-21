@@ -6,209 +6,163 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 30 Aug 2017 20:42:39 +0100</pubDate>
-    <lastBuildDate>Wed, 30 Aug 2017 20:42:39 +0100</lastBuildDate>
+    <pubDate>Thu, 21 Sep 2017 23:48:04 +0100</pubDate>
+    <lastBuildDate>Thu, 21 Sep 2017 23:48:04 +0100</lastBuildDate>
     <generator>Jekyll v3.4.3</generator>
     
       <item>
-        <title>A Title</title>
-        <description>&lt;h1 id=&quot;title&quot;&gt;Title&lt;/h1&gt;
-&lt;h2 id=&quot;subtitle&quot;&gt;Subtitle&lt;/h2&gt;
-</description>
-        <pubDate>Wed, 30 Aug 2017 00:00:00 +0100</pubDate>
-        <link>http://localhost:4000/2017/08/a-title</link>
-        <guid isPermaLink="true">http://localhost:4000/2017/08/a-title</guid>
-        
-        
-      </item>
-    
-      <item>
-        <title>A Full and Comprehensive Style Test</title>
-        <description>&lt;script async=&quot;&quot; defer=&quot;&quot; src=&quot;https://buttons.github.io/buttons.js&quot;&gt;&lt;/script&gt;
+        <title>Immutable Persistent Data Structures</title>
+        <description>&lt;p&gt;Persistent data structures preserve previous states after update operations, hence the name persistent. This property makes data structures effectively immutable. Immutability is a powerful concept. You don’t have to worry about whom you pass a value to. Whoever else has the same value as you does not have to worry about what you do. A computation based on a value will always lead to the same result. More concrete, if thread A passes a value to thread B there is no need to worry about what B does with the value. It can’t affect A since it will always stay the same.
+What if you combine two values to a composite value, do the same properties hold? The answer is yes. It can still be safely shared. As long as you stack immutable values on top of each other the resulting composite value or object will still be immutable. You can go home, come back the next day and nothing has changed.&lt;br /&gt;
+Can you do the same with mutable objects? If thread A passes a mutable object to thread B and then performs a computation based on it’s content. Will it always lead to the same result? Will it even lead to a result? We don’t know. What if A needs to divide by a number in that object and B did change it to 0. Great, we just destroyed the universe! So we need some sort of locking mechanism to prevent B from changing the object before A made it’s computation. Or do we just need to prevent B from making changes while we check that the content is not 0 and perform our computation? What is the behaviour if you want to copy an object? Do you just copy the references in it? Do you traverse the entire object graph and copy everything in it? Something in between? After we went through all the effort to make everything work with our mutable objects, can we safely stack them together to a new object and use it somewhere else? No, we have to do everything over again! &lt;sup id=&quot;fnref:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
 
-&lt;p align=&quot;center&quot;&gt;
-  &lt;img src=&quot;https://deadbeef.me/paper-jekyll-theme/assets/paper-cover-photo.png&quot; /&gt;
-  &lt;p align=&quot;center&quot;&gt;
-     A minimalistic Jekyll Theme
-     &lt;br /&gt;
-     &lt;br /&gt;
-     &lt;a class=&quot;no-hov&quot; href=&quot;https://travis-ci.org/mkchoi212/paper-jekyll-theme&quot;&gt;&lt;img src=&quot;https://travis-ci.org/mkchoi212/paper-jekyll-theme.svg?branch=master&quot; /&gt;&lt;/a&gt;
-     &lt;a class=&quot;no-hov&quot; href=&quot;https://raw.githubusercontent.com/mkchoi212/paper-jekyll-theme/master/LICENSE&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/license-MIT-blue.svg&quot; /&gt;&lt;/a&gt;
-     &lt;br /&gt;&lt;br /&gt;
-     &lt;a class=&quot;github-button&quot; href=&quot;https://github.com/mkchoi212/paper-jekyll-theme&quot; data-size=&quot;large&quot; data-show-count=&quot;true&quot; aria-label=&quot;Star mkchoi212/paper-jekyll-theme on GitHub&quot;&gt;Stars&lt;/a&gt;
-  &lt;/p&gt;
-&lt;/p&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;Not many developers would argue with that. However, if asked why they don’t use immutable data structures as a default you get a variety of answers. Mutability is not a problem if you know what you’re doing. Bad performance because you need to copy an object if you want to make a change to it. It’s easier to move an object 1 cm to the left than it is to bootstrap a universe where the object happens to 1 cm to the left. The first point is not going to be addressed in this article since it’s hard to argue about it. The second point, i.e. performance, is what we’re going to look at. At least in a Java world there is some truth to it. The same holds for most other traditionally non-functional languages. Even though the impact of object creation is often overestimated it can’t be argued that without the help of additional tools and only the standard Collections API, things become tedious and inefficient. The only tool provided to get something that’s close to an immutable collection is to obtain an &lt;a href=&quot;https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#unmodifiableCollection-java.util.Collection-&quot;&gt;unmodifiable view&lt;/a&gt; of an existing collection.&lt;/p&gt;
 
-&lt;p&gt;Paper is a minimal Jekyll theme. Perfect for hosting your personal site, blog, or portfolio on GitHub or self-hosting on your own server. The styling is purposely minimalistic so that you can add your own flare to the website.&lt;/p&gt;
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;someList&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;someList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;foo&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;someList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;bar&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unmodifyableList&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Collections&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;unmodifiableList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;someList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
-&lt;p&gt;Below is just about everything you’ll need to style in the theme. Check the source code to see the many embedded elements within paragraphs.&lt;/p&gt;
+&lt;p&gt;Let’s ignore the fact that this does not guarantee that the list really isn’t modified. What needs to happen if we want to add something to this list? We make a copy of this list with the new element.&lt;/p&gt;
 
-&lt;hr /&gt;
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;modified&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ArrayList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;unmodifyableList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;modified&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;baz&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;immutableModified&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Collections&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;unmodifiableList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;modified&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
 
-&lt;h2 id=&quot;1-header&quot;&gt;1. Header&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;Great, now we have two complete lists in memory. Not to mention the time it takes to make the copy. Even some very accomplished engineers think that this is just how things work and there’s not much we can do about it. Most know that there are implementations that make it easier to construct and and work with immutable lists, such as Guava’s &lt;a href=&quot;https://github.com/google/guava/wiki/ImmutableCollectionsExplained&quot;&gt;Immutable Collections&lt;/a&gt;, which even have some basic functionality to avoid unnecessary copying. From the documentation (as of version 23):&lt;/p&gt;
 
-&lt;h1 id=&quot;header-1&quot;&gt;Header 1&lt;/h1&gt;
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;ImmutableSet&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foobar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ImmutableSet&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;of&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;foo&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;bar&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;baz&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;thingamajig&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;foobar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
 
-&lt;h2 id=&quot;header-2&quot;&gt;Header 2&lt;/h2&gt;
+&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;thingamajig&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Collection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;collection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;ImmutableList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;defensiveCopy&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ImmutableList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;copyOf&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;collection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+   &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;In this example, &lt;code class=&quot;highlighter-rouge&quot;&gt;ImmutableList.copyOf&lt;/code&gt; will return a view on &lt;code class=&quot;highlighter-rouge&quot;&gt;foobar&lt;/code&gt; which means we only have one collection in memory. That’s an improvement, but what if an element needs to be added to the collection? Unfortunately we’re back to having two copies, the original and the new one with an additional element, including the overhead to create the copy. So as soon as performance becomes remotely important, we go back to our messy world of having a bunch of threads violate shared mutable state. But that doesn’t have to be!&lt;/p&gt;
 
-&lt;h3 id=&quot;header-3&quot;&gt;Header 3&lt;/h3&gt;
+&lt;h1 id=&quot;structural-sharing&quot;&gt;Structural Sharing&lt;/h1&gt;
+&lt;p&gt;From this point onward, the assumption is that everything is immutable.&lt;br /&gt;
+The key to more efficient immutable data structures is that we don’t need complete copies to express different states if some of the structure is identical. Consider the simplest case, a list. We don’t need two complete lists to express the fact that we added an element to to list A. It’s sufficient if I tell you that B is list A plus the new element. This is straightforward to implement as a linked list.&lt;/p&gt;
 
-&lt;h4 id=&quot;header-4&quot;&gt;Header 4&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/persistent-linked-list.jpg&quot; alt=&quot;prepend to list&quot; /&gt;&lt;/p&gt;
 
-&lt;h5 id=&quot;header-5&quot;&gt;Header 5&lt;/h5&gt;
+&lt;p&gt;In the above example, &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt; holds a reference to the &lt;code class=&quot;highlighter-rouge&quot;&gt;bar&lt;/code&gt; node. If you traverse the list you get &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;bar&quot;, &quot;foo&quot;&lt;/code&gt;. We now want to add an element &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;baz&quot;&lt;/code&gt; to the beginning of the list and assign the new list to &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt;. It’s sufficient to create a &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;baz&quot;&lt;/code&gt; node and point it to the &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;bar&quot;&lt;/code&gt; node of list &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt;. If you traverse &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt; you get &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;baz&quot;, &quot;bar&quot;, &quot;foo&quot;&lt;/code&gt;. Since everything is immutable we don’t have to worry about what someone with a reference to &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt; might do. Similarly to prepending an item it is also possible to remove one. The following example shows how to create a new list &lt;code class=&quot;highlighter-rouge&quot;&gt;c &lt;/code&gt; which is &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt; with it’s first item removed.&lt;/p&gt;
 
-&lt;h6 id=&quot;header-6&quot;&gt;Header 6&lt;/h6&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/persistent-linked-list-delete.jpg&quot; alt=&quot;remove from list&quot; /&gt;&lt;/p&gt;
 
-&lt;h3 id=&quot;1-1-header-alignment&quot;&gt;1-1. Header Alignment&lt;/h3&gt;
+&lt;p&gt;This is called &lt;em&gt;structural sharing&lt;/em&gt; because all three lists share the nodes &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;foo&quot;&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;bar&quot;&lt;/code&gt;. So far it’s possible to prepend an item to a list in constant time, O(1) to be more specific. The same holds for removing the first item. That’s pretty great, but as soon as add or remove operations are performed on items other than the head, i.e. the first element of the list, things are starting to get worse.&lt;/p&gt;
 
-&lt;h5 id=&quot;leftdefault&quot;&gt;Left(Default)&lt;/h5&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/list-remove-intermediate.jpg&quot; alt=&quot;remove intermediate from list&quot; /&gt;&lt;/p&gt;
 
-&lt;h5 class=&quot;center&quot; id=&quot;center&quot;&gt;Center&lt;/h5&gt;
+&lt;p&gt;The above example shows the necessary structure to remove the elements &lt;code class=&quot;highlighter-rouge&quot;&gt;2-4&lt;/code&gt; and assign the resulting lists to &lt;code class=&quot;highlighter-rouge&quot;&gt;e-g&lt;/code&gt;, respectively. It can be observed that both time and space complexity deteriorate the further to the end of the list the element to be removed is, to the point where we have linear time complexity of O(n) and no structural sharing between the different lists any more. Add operations work in a similar way and suffer from the same performance loss.&lt;br /&gt;
+To summarise. So far we have an immutable linked list that makes use of structural sharing. Best-case performance is O(1) on add/remove operations with 100% structural sharing, i.e. 0% additional memory compared to it’s mutable counterpart. Worst-case performance is O(n) with 0% structural sharing when operations are performed on the last element. This allows for an efficient implementation of a stack data structure, however, it primarily serves as an easy to understand example of an immutable persistent data structure. The goal is to have implementations of more commonly used structures, like lists and maps. The following sections explore more sophisticated implementations which almost reach, or in some edge-cases even surpass, the performance of traditional, mutable implementations.&lt;/p&gt;
 
-&lt;h5 class=&quot;right&quot; id=&quot;right&quot;&gt;Right&lt;/h5&gt;
+&lt;h1 id=&quot;more-efficient-implementations&quot;&gt;More Efficient Implementations&lt;/h1&gt;
+&lt;p&gt;The previous section established that structural sharing leads to more efficient implementations of immutable persistent data structures compared to copying everyting. In order for update operations to be efficient, we have to recycle as much of the old structe as we possibly can. A data structre that allows for more sophisticated structural sharing is the directed acyclic graph (DAG). That’s a graph with directed edges and no cycles. When traversing a DAG, if you visit a node you will never visit the same node again. A tree, for example, is a DAG (but not all DAGs are trees!). In fact, the linked list is also a DAG, albeit not a very usedful one for our pupose.&lt;br /&gt;
+In the next example you’ll see a tree in which a node is modified. To achieve the modification, the majority of nodes of the original tree can be retained in the new tree with root node &lt;code class=&quot;highlighter-rouge&quot;&gt;d'&lt;/code&gt;.&lt;/p&gt;
 
-&lt;h2 id=&quot;2-body-text&quot;&gt;2. Body Text&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/modify-dag.png&quot; alt=&quot;modify DAG&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Lorem ipsum dolor sit amet, &lt;a href=&quot;https://www.google.com&quot;&gt;test link&lt;/a&gt; adipiscing elit. &lt;strong&gt;This is strong.&lt;/strong&gt; Nullam dignissim convallis est. Quisque aliquam. &lt;em&gt;This is emphasized.&lt;/em&gt; Donec faucibus. Nunc iaculis suscipit dui. 5&lt;sup&gt;3&lt;/sup&gt; = 125. Water is H&lt;sub&gt;2&lt;/sub&gt;O. Nam sit amet sem. Aliquam libero nisi, imperdiet at, tincidunt nec, gravida vehicula, nisl. &lt;u&gt;Underline&lt;/u&gt;. Maecenas ornare tortor. Donec sed tellus eget &lt;code class=&quot;highlighter-rouge&quot;&gt;COPY filename&lt;/code&gt; sapien fringilla nonummy. Mauris a ante. Suspendisse quam sem, consequat at, &lt;del&gt;Dinner’s at 5:00.&lt;/del&gt; commodo vitae, feugiat in, nunc. Morbi imperdiet augue &lt;mark&gt;mark element&lt;/mark&gt; quis tellus.&lt;/p&gt;
+&lt;p&gt;There is also something else that’s interesting about the above tree. If it is traversed with depth-first in-order traveral you’ll get &lt;code class=&quot;highlighter-rouge&quot;&gt;a,b,c,d,e,f,g&lt;/code&gt;. That’s very much intended. If we construct a tree the right way we can get the nodes in any order we want. That property allows us to implement a list interface with a tree. We can still expose an interface like &lt;code class=&quot;highlighter-rouge&quot;&gt;myList.get(3)&lt;/code&gt;, but under the hood, the implementation is a tree. In a naive implementation, we traverse the tree until we’ve evaluated the fourth node to get the fourth element.&lt;br /&gt;
+How does this compare to our linked list example from earlier? Assume the last element (&lt;code class=&quot;highlighter-rouge&quot;&gt;g&lt;/code&gt;) has to be removed from the list, an operation with very bad performance in the linked list. Three new nodes need to be created, &lt;code class=&quot;highlighter-rouge&quot;&gt;f'&lt;/code&gt; that does not point to &lt;code class=&quot;highlighter-rouge&quot;&gt;g&lt;/code&gt; anymore, &lt;code class=&quot;highlighter-rouge&quot;&gt;e'&lt;/code&gt; which points to &lt;code class=&quot;highlighter-rouge&quot;&gt;f'&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;d'&lt;/code&gt; which points to &lt;code class=&quot;highlighter-rouge&quot;&gt;e'&lt;/code&gt;.  The new list/tree shares 50% of the structure of the old one and it took only three steps (i.e. all nodes on the path from the node in question to the root node). In case of a binary tree, the worst-case time complexity to manipulate a node is log2n, which can and generally should be written as O(log n). Since we will encounter trees with significantly larger branching factors the base is important and will be included in all expressions of complexity. Worst-case memory overhead is 50%. That’s great, but still not good enough compared to a mutable array that has O(1) complexity for most operations. The next sections will explain some implementations, minus some tweaks, that can actually be found in languages like Scala or Clojure.&lt;/p&gt;
 
-&lt;h2 id=&quot;21-references&quot;&gt;2.1 References&lt;/h2&gt;
+&lt;h2 id=&quot;bitmap-vector-trie&quot;&gt;Bitmap Vector Trie&lt;/h2&gt;
+&lt;p&gt;There is a kind of a DAG called a trie (often pronounced “tree” from re&lt;em&gt;Trie&lt;/em&gt;ve), which is discribed quite well on &lt;a href=&quot;https://en.wikipedia.org/wiki/Trie&quot;&gt;Wikipedia&lt;/a&gt;. It’s a tree which stores all the values in the leafes, and all decendants of a node share a common prefix, e.g. a bitmap. A trie can be used to implement a list, which is called a bitmap vector trie. Nodes and leafes are arrays. The nodes hold references, either to other nodes or to leafes that hold the actual elements of the list.&lt;br /&gt;
+Assume we want to retrieve the the element at position 50 of a list. To do so we take the bitmask of the position: &lt;code class=&quot;highlighter-rouge&quot;&gt;110010&lt;/code&gt;. Then we take the first two bits, look for the element at position &lt;code class=&quot;highlighter-rouge&quot;&gt;11&lt;/code&gt; in the array representing the root node and follow the reference at that position to the next node. We take the next two bits, look for the element at position &lt;code class=&quot;highlighter-rouge&quot;&gt;00&lt;/code&gt; of the current node and follow the reference to find the leaf node where the element is located. In the array representing the leaf, the element is located at position &lt;code class=&quot;highlighter-rouge&quot;&gt;10&lt;/code&gt;. Following is a visualisation of the example.&lt;/p&gt;
 
-&lt;p&gt;Syntax highlighting is a feature that displays source code, in different colors and fonts according to the category of terms. This feature facilitates writing in a structured language such as a programming language or a markup language as both structures and syntax errors are visually distinct. Highlighting does not affect the meaning of the text itself; it is intended only for human readers.&lt;sup id=&quot;fnref:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/bitmap_vector_trie.png&quot; alt=&quot;access bitmap vector trie&quot; /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;3-images&quot;&gt;3. Images&lt;/h2&gt;
+&lt;p&gt;In this example the bitmap size is 6 bits with 2-bit dispatching, meaning that each layer of the tree needs an array of size 2² and two bits at the time are used to find the position in the node/leaf. That is by no means a limitation. Any bitmap size can be used to construct a bitmap vector trie. In practice, it is usually 32 because that corresponds to a 32-bit integer&lt;sup id=&quot;fnref:2&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;. A bitmap vector trie with branching factor of 32 has a time complexity of log32n. That means it takes 2 operations to retrieve an item from a list of size 1000, or 6 operations to retrieve an item from a list of size 1’000’000’000. At most 7 arrays need to be reconstructed for any modifying operation on the trie. To put this into perspective, a fully initialised bitmap trie with support for 32bit integer positions has 134’217’728 nodes/leafes. Note that growing most traditional implementation of array lists isn’t free either. Oracle’s array list, for example, roughly grows like this once it’s capacity limit is hit (remember, growing includes copying the entire array):&lt;br /&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;int newCapacity = oldCapacity + (oldCapacity &amp;gt;&amp;gt; 1);&lt;/code&gt;&lt;sup id=&quot;fnref:3&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;&lt;br /&gt;
+That’s subject to change since it’s not part of the contract. The documentation only states that &lt;em&gt;the details of the growth policy are not specified beyond the fact that adding an element has constant amortized time cost. &lt;sup id=&quot;fnref:4&quot;&gt;&lt;a href=&quot;#fn:4&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;&lt;/em&gt;&lt;br /&gt;
+With the performance of the bitmap vector trie demonstrated above you need to put forward strong evidence as to why a shared mutable list should be used over an immutable one.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://placehold.it/800x400&quot; alt=&quot;Large example image&quot; title=&quot;Large example image&quot; /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;hash-array-mapped-trie-hamt&quot;&gt;Hash Array Mapped Trie (HAMT)&lt;/h2&gt;
+&lt;p&gt;So far everything was about exposing a list interface. What about an associative data type, such as a map? It’s straightforward to create a naive implementation of a hash table on top of any list, the bitmap vector trie described earlier is no exception. That implementation is called a hash array mapped trie (HAMT). All that is needed is a hash function with signature &lt;code class=&quot;highlighter-rouge&quot;&gt;(object) =&amp;gt; int32&lt;/code&gt;. To store a key-value pair, we call &lt;code class=&quot;highlighter-rouge&quot;&gt;hash(key)&lt;/code&gt; which results in number, say 1337. Then we store the value at position 1337 in the underlying list. To retrieve a value, &lt;code class=&quot;highlighter-rouge&quot;&gt;hash(key)&lt;/code&gt; key is called, we get 1337 as the has code and retrieve the value stored at position 1337.&lt;br /&gt;
+In order to avoid having to initialise an array of size 2³², traditional implementations use a concept called buckets. A bucket stores values in a range of the hash space. The following illustration shows you can divide a hash space of 32 into 4 buckets.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://placehold.it/400x200&quot; alt=&quot;Medium example image&quot; title=&quot;Medium example image&quot; /&gt;
-&lt;img src=&quot;http://placehold.it/200x200&quot; alt=&quot;Small example image&quot; title=&quot;Small example image&quot; /&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bucket       1        2       3        4
+        |--------|--------|--------|--------|
+hash        0-7     8-15    16-23     24-31
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
-&lt;h3 id=&quot;3-1-image-alignment&quot;&gt;3-1. Image Alignment&lt;/h3&gt;
+&lt;p&gt;This has the advantage that only a list of size 4 needs to be initialised instead of 32. However, if there are multiple values in the same bucket, the hashes of all existing values in the bucket need to be recomputed on both storing and retrieval operations. For example, if a value &lt;code class=&quot;highlighter-rouge&quot;&gt;A&lt;/code&gt; has a hash code of &lt;code class=&quot;highlighter-rouge&quot;&gt;9&lt;/code&gt; it will be put into bucket &lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt;. If another value, &lt;code class=&quot;highlighter-rouge&quot;&gt;B&lt;/code&gt;, has a hash code of &lt;code class=&quot;highlighter-rouge&quot;&gt;15&lt;/code&gt; it will also end up in bucket &lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt;. But in order to make sure it’s not already there, the hash code of &lt;code class=&quot;highlighter-rouge&quot;&gt;A&lt;/code&gt; needs to be recomputed. Because that’s expensive, the buckets have to be resized once there are too many values in there. The resizing operation is again very expensive.&lt;br /&gt;
+HAMTs don’t need this kind of abstraction and can grow organically. In order to do so we start using the least significant bits instead of the most significant ones to define the position of an element in the tree. What that means is we start from the right side of the bitmask instead of the left. Consider a map where The Lion King characters are being stored.&lt;/p&gt;
 
-&lt;p class=&quot;center&quot;&gt;&lt;img src=&quot;http://placehold.it/200x200&quot; alt=&quot;Center example image&quot; title=&quot;Center&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/hamt_1.png&quot; alt=&quot;HAMT 1&quot; /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;4-blockquotes&quot;&gt;4. Blockquotes&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Lorem ipsum dolor sit amet, test link adipiscing elit. Nullam dignissim convallis est. Quisque aliquam.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;5-list-types&quot;&gt;5. List Types&lt;/h2&gt;
-
-&lt;h3 id=&quot;unordered-list&quot;&gt;Unordered List&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&lt;/li&gt;
-  &lt;li&gt;Nam ultrices nunc in nisi pellentesque ultricies. Cras scelerisque ipsum in ante laoreet viverra. Pellentesque eget quam et augue molestie tincidunt ac ut ex. Sed quis velit vulputate, rutrum nisl sit amet, molestie neque. Vivamus sed augue at turpis suscipit fringilla.&lt;/li&gt;
-  &lt;li&gt;Integer pretium nisl vitae justo aliquam, at varius nisi blandit.
-    &lt;ol&gt;
-      &lt;li&gt;Nunc vehicula nulla ac odio gravida vestibulum sed nec mauris.&lt;/li&gt;
-      &lt;li&gt;Duis at diam eget arcu dapibus consequat.&lt;/li&gt;
-    &lt;/ol&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Etiam vel elit in purus iaculis pretium.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;ordered-list&quot;&gt;Ordered List&lt;/h3&gt;
-
+&lt;p&gt;If Simba needs to be stored with his name as the key, the following happens.&lt;/p&gt;
 &lt;ol&gt;
-  &lt;li&gt;Quisque ullamcorper leo non ex pretium, in fermentum libero imperdiet.&lt;/li&gt;
-  &lt;li&gt;Donec eu nulla euismod, rhoncus ipsum nec, faucibus elit.&lt;/li&gt;
-  &lt;li&gt;Nam blandit purus gravida, accumsan sem in, lacinia orci.
-    &lt;ul&gt;
-      &lt;li&gt;Duis congue dui nec nisi posuere, at luctus velit semper.&lt;/li&gt;
-      &lt;li&gt;Suspendisse in lorem id lacus elementum pretium nec vel nibh.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Aliquam eget ipsum laoreet, maximus risus vitae, iaculis leo.&lt;/li&gt;
+  &lt;li&gt;`hash(“Simba”) = 52 = 110100&lt;/li&gt;
+  &lt;li&gt;The two least significant bits are taken (the first two bits from the right): &lt;code class=&quot;highlighter-rouge&quot;&gt;00&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;We look at position &lt;code class=&quot;highlighter-rouge&quot;&gt;00&lt;/code&gt; in the root node. Nothing is there so we can store it.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h3 id=&quot;definition-lists&quot;&gt;Definition Lists&lt;/h3&gt;
+&lt;p&gt;Retrieval works in a similar manner. Then we add Timon, &lt;code class=&quot;highlighter-rouge&quot;&gt;hash(&quot;Timon&quot;) = 18 = 010010&lt;/code&gt;, nothing at position &lt;code class=&quot;highlighter-rouge&quot;&gt;10&lt;/code&gt; in the root node so we just add it. Next is, of course, Pumbaa. So we do &lt;code class=&quot;highlighter-rouge&quot;&gt;hash(&quot;Pumbaa&quot;) = 10 = 001010&lt;/code&gt;. Oops, position &lt;code class=&quot;highlighter-rouge&quot;&gt;10&lt;/code&gt; is already used up by Timon. That’s not a problem. Remember, the root node has to be recreated anyway since we’re still talking about immutable persistent data structures. So we can just do the following.&lt;/p&gt;
 
-&lt;dl&gt;
-  &lt;dt&gt;kramdown&lt;/dt&gt;
-  &lt;dd&gt;A Markdown-superset converter&lt;/dd&gt;
-  &lt;dt&gt;Maruku&lt;/dt&gt;
-  &lt;dd&gt;Another Markdown-superset converter&lt;/dd&gt;
-&lt;/dl&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/hamt_2.png&quot; alt=&quot;HAMT 2&quot; /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;6-tables&quot;&gt;6. Tables&lt;/h2&gt;
+&lt;p&gt;This way a map can be gracefully grown. At position &lt;code class=&quot;highlighter-rouge&quot;&gt;10&lt;/code&gt; of the root node where the conflict arised we replace the entry with a reference to another array. If a level needs to be added, more bits of the bitmask are needed to find the value associated with a key. For Timon and Pumba it is now the 4 least significant bits, for Simba still only 2.&lt;br /&gt;
+While insert and delete operations still have comparable complexity to the bitmap vector trie we face a different problem with the HAMT. Memory usage. A good hash function will return evenly distributed hashes over the whole hash range. While that is a desired property, it poses a problem. After inserting some elements we’ll end up with a very sparsely populated tree, which means that there will be a lot of arrays in memory with only a few entries. If we use arrays of size 32 and there is only 1 entry in an array, we waste almost 97% of the allocated memory. See the following example.&lt;/p&gt;
 
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: left&quot;&gt;Header1&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;Header2&lt;/th&gt;
-      &lt;th style=&quot;text-align: right&quot;&gt;Header3&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;cell1&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;cell2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;cell3&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;cell4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;cell5&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;cell6&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;cell1&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;cell2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;cell3&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;cell4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;cell5&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;cell6&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-  &lt;tfoot&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;Foot1&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;Foot2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;Foot3&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tfoot&gt;
-&lt;/table&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/hamt_sparse.png&quot; alt=&quot;Sparse HAMT&quot; /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;7-code-snippets&quot;&gt;7. Code Snippets&lt;/h2&gt;
+&lt;p&gt;In order for the HAMT to be usable in practice the memory usage has to be reduced drastically.&lt;/p&gt;
 
-&lt;h3 id=&quot;highlighted-code-blocks&quot;&gt;Highlighted Code Blocks&lt;/h3&gt;
+&lt;h3 id=&quot;compression&quot;&gt;Compression&lt;/h3&gt;
 
-&lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nf&quot;&gt;#container&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nl&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-  &lt;span class=&quot;nl&quot;&gt;margin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;-240px&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-  &lt;span class=&quot;nl&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;100%&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;p&gt;Phil Bagwell suggested compressing the information in each node of the trie to reduce memory consumption.&lt;sup id=&quot;fnref:5&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt; The compression works by storing the bitmask of an n-bit integer to indicate which slots of the array that stores references to the child elements of the node are used. The following example shows how a node from the previous example can be compressed.&lt;/p&gt;
 
-&lt;h3 id=&quot;standard-code-block&quot;&gt;Standard code block&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/2017_ipd/hamt_compress.png&quot; alt=&quot;Compressed HAMT&quot; /&gt;&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;div id=&quot;awesome&quot;&amp;gt;
-  &amp;lt;p&amp;gt;This is great isn't it?&amp;lt;/p&amp;gt;
-&amp;lt;/div&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;p&gt;The bitmask has the size of the amount of elements that can be stored in a node, which is 4 in this example or 32 in most real world implementations. Every bit set to 1 indicates that the element at the according position in the original array would have been present. This way we only have to count the 1s and initialize an array of a size that corresponds to the sum of 1s. The first 1 corresponds to the first element of the array, the second to the second element, and so on. So we can save the space all the empty array elements wasted, at the cost of 32bit per node.&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;Persistent data structures preserve previous states after update operations, hence the name persistent. This property makes data structures effectively immutable and thus very well suited in concurrent environmens. The usage of a trie structure enables structural sharing, i.e. large parts of the data structure can be be safely shared between different versions. Performance is comparable to conventional mutable data structures where operations are in-place modifications. Update operations on immutable persistent data structures as described in this post have a worst-case time complexity of log32n, which is 2 for 1’000 and 7 for a 1’000’000’000 elements. This is so close to constant time that no difference in performance will be noticable in most applicatoins.&lt;/p&gt;
+
+&lt;h1 id=&quot;other-resources&quot;&gt;Other Resources&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=I7IdS-PbEgI&amp;amp;feature=youtu.be&quot;&gt;React.js Conf 2015 - Immutable Data and React&lt;/a&gt;.&lt;br /&gt;
+Good talk by Lee Byron, the author of immutables.js. Lots of visual and code examples on how immutable persistent data structures work.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://homepages.cwi.nl/~jurgenv/papers/PhDThesis_Michael_Steindorfer.pdf&quot;&gt;Michael J. Steindorfer, &lt;em&gt;Efficient Immutable Collections&lt;/em&gt;&lt;/a&gt;&lt;br /&gt;
+PhD thesis of Michael J. Steindorfer exploring immutable persistent data structures beyond HAMTs.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/scala/scala/tree/2.12.x/src/library/scala/collection/immutable&quot;&gt;Scala immutable collections&lt;/a&gt;&lt;br /&gt;
+Implementations of Scala’s immutable collections.&lt;/p&gt;
+
+&lt;h1 id=&quot;references&quot;&gt;References&lt;/h1&gt;
 &lt;div class=&quot;footnotes&quot;&gt;
   &lt;ol&gt;
     &lt;li id=&quot;fn:1&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Syntax_highlighting&quot;&gt;http://en.wikipedia.org/wiki/Syntax_highlighting&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+      &lt;p&gt;The Value of Values with Rich Hickey &lt;a href=&quot;https://www.youtube.com/watch?v=-6BsiVyC1kM&quot;&gt;https://www.youtube.com/watch?v=-6BsiVyC1kM&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:2&quot;&gt;
+      &lt;p&gt;Scala Vector &lt;a href=&quot;http://www.scala-lang.org/api/2.12.1/scala/collection/immutable/Vector.html&quot;&gt;http://www.scala-lang.org/api/2.12.1/scala/collection/immutable/Vector.html&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:3&quot;&gt;
+      &lt;p&gt;OpenJDK ArrayList &lt;a href=&quot;http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/tip/src/share/classes/java/util/ArrayList.java&quot;&gt;http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/tip/src/share/classes/java/util/ArrayList.java&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:4&quot;&gt;
+      &lt;p&gt;Java 8 ArrayList &lt;a href=&quot;https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html&quot;&gt;https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:4&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:5&quot;&gt;
+      &lt;p&gt;Phil Bagwell, &lt;em&gt;Ideal Hash Trees&lt;/em&gt; &lt;a href=&quot;https://idea.popcount.org/2012-07-25-introduction-to-hamt/idealhashtrees.pdf&quot;&gt;https://idea.popcount.org/2012-07-25-introduction-to-hamt/idealhashtrees.pdf&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:5&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
 &lt;/div&gt;
 </description>
-        <pubDate>Mon, 15 Aug 2016 00:00:00 +0100</pubDate>
-        <link>http://localhost:4000/2016/08/style-test</link>
-        <guid isPermaLink="true">http://localhost:4000/2016/08/style-test</guid>
-        
-        <category>test,</category>
-        
-        <category>style</category>
+        <pubDate>Thu, 21 Sep 2017 00:00:00 +0100</pubDate>
+        <link>http://localhost:4000/2017/09/immutable-persistent-data-structures</link>
+        <guid isPermaLink="true">http://localhost:4000/2017/09/immutable-persistent-data-structures</guid>
         
         
       </item>

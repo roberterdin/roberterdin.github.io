@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Immutable Persistent Data Structures - Robert Erdin</title>
+    <meta name="description" content="Persistent data structures preserve previous states after update operations, hence the name persistent. This property makes data structures effectively immut...">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,900,400italic' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="canonical" href="http://localhost:4000/2017/09/immutable-persistent-data-structures">
+    <link rel="alternate" type="application/rss+xml" title="Robert Erdin" href="http://localhost:4000/feed.xml">
+<script src="http://127.0.0.1:35729/livereload.js"></script></head>
+
+    <body>
+        <main class="u-container">
+        <div class="c-page">
+    <header class="c-page__header">
+    <h1><code>Robert Erdin</code></h1>
+
+    
+    <p>
+        <a href="/">Home</a><span
+          class="u-separate"></span> <a href="/projects/">Projects</a><span class="u-separate"></span> <a href="/about/">About</a><span class="u-separate"></span><a href="/feed.xml">RSS</a>
+    </p>
+</header>
+
+    <div class="c-page__main">
+    <article class="c-article">
+    <header class="c-article__header">
+        <h1 class="c-article__title">Immutable Persistent Data Structures</h1>
+        <p class="c-article__time"><time datetime="2017-09-21T00:00:00+01:00" itemprop="datePublished">Sep 21, 2017</time></p>
+    </header>
+    
+    <!-- Post Tags -->
+    <ul class="c-tags">
+    
+    </ul>
+
+    <div class="c-article__main">
+        <p>Persistent data structures preserve previous states after update operations, hence the name persistent. This property makes data structures effectively immutable. Immutability is a powerful concept. You don’t have to worry about whom you pass a value to. Whoever else has the same value as you does not have to worry about what you do. A computation based on a value will always lead to the same result. More concrete, if thread A passes a value to thread B there is no need to worry about what B does with the value. It can’t affect A since it will always stay the same.
+What if you combine two values to a composite value, do the same properties hold? The answer is yes. It can still be safely shared. As long as you stack immutable values on top of each other the resulting composite value or object will still be immutable. You can go home, come back the next day and nothing has changed.<br />
+Can you do the same with mutable objects? If thread A passes a mutable object to thread B and then performs a computation based on it’s content. Will it always lead to the same result? Will it even lead to a result? We don’t know. What if A needs to divide by a number in that object and B did change it to 0. Great, we just destroyed the universe! So we need some sort of locking mechanism to prevent B from changing the object before A made it’s computation. Or do we just need to prevent B from making changes while we check that the content is not 0 and perform our computation? What is the behaviour if you want to copy an object? Do you just copy the references in it? Do you traverse the entire object graph and copy everything in it? Something in between? After we went through all the effort to make everything work with our mutable objects, can we safely stack them together to a new object and use it somewhere else? No, we have to do everything over again! <sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup></p>
+
+<p>Not many developers would argue with that. However, if asked why they don’t use immutable data structures as a default you get a variety of answers. Mutability is not a problem if you know what you’re doing. Bad performance because you need to copy an object if you want to make a change to it. It’s easier to move an object 1 cm to the left than it is to bootstrap a universe where the object happens to 1 cm to the left. The first point is not going to be addressed in this article since it’s hard to argue about it. The second point, i.e. performance, is what we’re going to look at. At least in a Java world there is some truth to it. The same holds for most other traditionally non-functional languages. Even though the impact of object creation is often overestimated it can’t be argued that without the help of additional tools and only the standard Collections API, things become tedious and inefficient. The only tool provided to get something that’s close to an immutable collection is to obtain an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#unmodifiableCollection-java.util.Collection-">unmodifiable view</a> of an existing collection.</p>
+
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">someList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+<span class="n">someList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"foo"</span><span class="o">);</span>
+<span class="n">someList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"bar"</span><span class="o">);</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">unmodifyableList</span> <span class="o">=</span> <span class="n">Collections</span><span class="o">.</span><span class="na">unmodifiableList</span><span class="o">(</span><span class="n">someList</span><span class="o">);</span>
+</code></pre>
+</div>
+
+<p>Let’s ignore the fact that this does not guarantee that the list really isn’t modified. What needs to happen if we want to add something to this list? We make a copy of this list with the new element.</p>
+
+<div class="language-java highlighter-rouge"><pre class="highlight"><code>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">modified</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">(</span><span class="n">unmodifyableList</span><span class="o">);</span>
+<span class="n">modified</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"baz"</span><span class="o">);</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">immutableModified</span> <span class="o">=</span> <span class="n">Collections</span><span class="o">.</span><span class="na">unmodifiableList</span><span class="o">(</span><span class="n">modified</span><span class="o">);</span>
+
+</code></pre>
+</div>
+<p>Great, now we have two complete lists in memory. Not to mention the time it takes to make the copy. Even some very accomplished engineers think that this is just how things work and there’s not much we can do about it. Most know that there are implementations that make it easier to construct and and work with immutable lists, such as Guava’s <a href="https://github.com/google/guava/wiki/ImmutableCollectionsExplained">Immutable Collections</a>, which even have some basic functionality to avoid unnecessary copying. From the documentation (as of version 23):</p>
+
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">ImmutableSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">foobar</span> <span class="o">=</span> <span class="n">ImmutableSet</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="s">"foo"</span><span class="o">,</span> <span class="s">"bar"</span><span class="o">,</span> <span class="s">"baz"</span><span class="o">);</span>
+<span class="n">thingamajig</span><span class="o">(</span><span class="n">foobar</span><span class="o">);</span>
+
+<span class="kt">void</span> <span class="nf">thingamajig</span><span class="o">(</span><span class="n">Collection</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">collection</span><span class="o">)</span> <span class="o">{</span>
+   <span class="n">ImmutableList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">defensiveCopy</span> <span class="o">=</span> <span class="n">ImmutableList</span><span class="o">.</span><span class="na">copyOf</span><span class="o">(</span><span class="n">collection</span><span class="o">);</span>
+   <span class="o">...</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>In this example, <code class="highlighter-rouge">ImmutableList.copyOf</code> will return a view on <code class="highlighter-rouge">foobar</code> which means we only have one collection in memory. That’s an improvement, but what if an element needs to be added to the collection? Unfortunately we’re back to having two copies, the original and the new one with an additional element, including the overhead to create the copy. So as soon as performance becomes remotely important, we go back to our messy world of having a bunch of threads violate shared mutable state. But that doesn’t have to be!</p>
+
+<h1 id="structural-sharing">Structural Sharing</h1>
+<p>From this point onward, the assumption is that everything is immutable.<br />
+The key to more efficient immutable data structures is that we don’t need complete copies to express different states if some of the structure is identical. Consider the simplest case, a list. We don’t need two complete lists to express the fact that we added an element to to list A. It’s sufficient if I tell you that B is list A plus the new element. This is straightforward to implement as a linked list.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/persistent-linked-list.jpg" alt="prepend to list" /></p>
+
+<p>In the above example, <code class="highlighter-rouge">a</code> holds a reference to the <code class="highlighter-rouge">bar</code> node. If you traverse the list you get <code class="highlighter-rouge">"bar", "foo"</code>. We now want to add an element <code class="highlighter-rouge">"baz"</code> to the beginning of the list and assign the new list to <code class="highlighter-rouge">b</code>. It’s sufficient to create a <code class="highlighter-rouge">"baz"</code> node and point it to the <code class="highlighter-rouge">"bar"</code> node of list <code class="highlighter-rouge">a</code>. If you traverse <code class="highlighter-rouge">b</code> you get <code class="highlighter-rouge">"baz", "bar", "foo"</code>. Since everything is immutable we don’t have to worry about what someone with a reference to <code class="highlighter-rouge">a</code> might do. Similarly to prepending an item it is also possible to remove one. The following example shows how to create a new list <code class="highlighter-rouge">c </code> which is <code class="highlighter-rouge">b</code> with it’s first item removed.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/persistent-linked-list-delete.jpg" alt="remove from list" /></p>
+
+<p>This is called <em>structural sharing</em> because all three lists share the nodes <code class="highlighter-rouge">"foo"</code> and <code class="highlighter-rouge">"bar"</code>. So far it’s possible to prepend an item to a list in constant time, O(1) to be more specific. The same holds for removing the first item. That’s pretty great, but as soon as add or remove operations are performed on items other than the head, i.e. the first element of the list, things are starting to get worse.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/list-remove-intermediate.jpg" alt="remove intermediate from list" /></p>
+
+<p>The above example shows the necessary structure to remove the elements <code class="highlighter-rouge">2-4</code> and assign the resulting lists to <code class="highlighter-rouge">e-g</code>, respectively. It can be observed that both time and space complexity deteriorate the further to the end of the list the element to be removed is, to the point where we have linear time complexity of O(n) and no structural sharing between the different lists any more. Add operations work in a similar way and suffer from the same performance loss.<br />
+To summarise. So far we have an immutable linked list that makes use of structural sharing. Best-case performance is O(1) on add/remove operations with 100% structural sharing, i.e. 0% additional memory compared to it’s mutable counterpart. Worst-case performance is O(n) with 0% structural sharing when operations are performed on the last element. This allows for an efficient implementation of a stack data structure, however, it primarily serves as an easy to understand example of an immutable persistent data structure. The goal is to have implementations of more commonly used structures, like lists and maps. The following sections explore more sophisticated implementations which almost reach, or in some edge-cases even surpass, the performance of traditional, mutable implementations.</p>
+
+<h1 id="more-efficient-implementations">More Efficient Implementations</h1>
+<p>The previous section established that structural sharing leads to more efficient implementations of immutable persistent data structures compared to copying everyting. In order for update operations to be efficient, we have to recycle as much of the old structe as we possibly can. A data structre that allows for more sophisticated structural sharing is the directed acyclic graph (DAG). That’s a graph with directed edges and no cycles. When traversing a DAG, if you visit a node you will never visit the same node again. A tree, for example, is a DAG (but not all DAGs are trees!). In fact, the linked list is also a DAG, albeit not a very usedful one for our pupose.<br />
+In the next example you’ll see a tree in which a node is modified. To achieve the modification, the majority of nodes of the original tree can be retained in the new tree with root node <code class="highlighter-rouge">d'</code>.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/modify-dag.png" alt="modify DAG" /></p>
+
+<p>There is also something else that’s interesting about the above tree. If it is traversed with depth-first in-order traveral you’ll get <code class="highlighter-rouge">a,b,c,d,e,f,g</code>. That’s very much intended. If we construct a tree the right way we can get the nodes in any order we want. That property allows us to implement a list interface with a tree. We can still expose an interface like <code class="highlighter-rouge">myList.get(3)</code>, but under the hood, the implementation is a tree. In a naive implementation, we traverse the tree until we’ve evaluated the fourth node to get the fourth element.<br />
+How does this compare to our linked list example from earlier? Assume the last element (<code class="highlighter-rouge">g</code>) has to be removed from the list, an operation with very bad performance in the linked list. Three new nodes need to be created, <code class="highlighter-rouge">f'</code> that does not point to <code class="highlighter-rouge">g</code> anymore, <code class="highlighter-rouge">e'</code> which points to <code class="highlighter-rouge">f'</code> and <code class="highlighter-rouge">d'</code> which points to <code class="highlighter-rouge">e'</code>.  The new list/tree shares 50% of the structure of the old one and it took only three steps (i.e. all nodes on the path from the node in question to the root node). In case of a binary tree, the worst-case time complexity to manipulate a node is log2n, which can and generally should be written as O(log n). Since we will encounter trees with significantly larger branching factors the base is important and will be included in all expressions of complexity. Worst-case memory overhead is 50%. That’s great, but still not good enough compared to a mutable array that has O(1) complexity for most operations. The next sections will explain some implementations, minus some tweaks, that can actually be found in languages like Scala or Clojure.</p>
+
+<h2 id="bitmap-vector-trie">Bitmap Vector Trie</h2>
+<p>There is a kind of a DAG called a trie (often pronounced “tree” from re<em>Trie</em>ve), which is discribed quite well on <a href="https://en.wikipedia.org/wiki/Trie">Wikipedia</a>. It’s a tree which stores all the values in the leafes, and all decendants of a node share a common prefix, e.g. a bitmap. A trie can be used to implement a list, which is called a bitmap vector trie. Nodes and leafes are arrays. The nodes hold references, either to other nodes or to leafes that hold the actual elements of the list.<br />
+Assume we want to retrieve the the element at position 50 of a list. To do so we take the bitmask of the position: <code class="highlighter-rouge">110010</code>. Then we take the first two bits, look for the element at position <code class="highlighter-rouge">11</code> in the array representing the root node and follow the reference at that position to the next node. We take the next two bits, look for the element at position <code class="highlighter-rouge">00</code> of the current node and follow the reference to find the leaf node where the element is located. In the array representing the leaf, the element is located at position <code class="highlighter-rouge">10</code>. Following is a visualisation of the example.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/bitmap_vector_trie.png" alt="access bitmap vector trie" /></p>
+
+<p>In this example the bitmap size is 6 bits with 2-bit dispatching, meaning that each layer of the tree needs an array of size 2² and two bits at the time are used to find the position in the node/leaf. That is by no means a limitation. Any bitmap size can be used to construct a bitmap vector trie. In practice, it is usually 32 because that corresponds to a 32-bit integer<sup id="fnref:2"><a href="#fn:2" class="footnote">2</a></sup>. A bitmap vector trie with branching factor of 32 has a time complexity of log32n. That means it takes 2 operations to retrieve an item from a list of size 1000, or 6 operations to retrieve an item from a list of size 1’000’000’000. At most 7 arrays need to be reconstructed for any modifying operation on the trie. To put this into perspective, a fully initialised bitmap trie with support for 32bit integer positions has 134’217’728 nodes/leafes. Note that growing most traditional implementation of array lists isn’t free either. Oracle’s array list, for example, roughly grows like this once it’s capacity limit is hit (remember, growing includes copying the entire array):<br />
+<code class="highlighter-rouge">int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);</code><sup id="fnref:3"><a href="#fn:3" class="footnote">3</a></sup><br />
+That’s subject to change since it’s not part of the contract. The documentation only states that <em>the details of the growth policy are not specified beyond the fact that adding an element has constant amortized time cost. <sup id="fnref:4"><a href="#fn:4" class="footnote">4</a></sup></em><br />
+With the performance of the bitmap vector trie demonstrated above you need to put forward strong evidence as to why a shared mutable list should be used over an immutable one.</p>
+
+<h2 id="hash-array-mapped-trie-hamt">Hash Array Mapped Trie (HAMT)</h2>
+<p>So far everything was about exposing a list interface. What about an associative data type, such as a map? It’s straightforward to create a naive implementation of a hash table on top of any list, the bitmap vector trie described earlier is no exception. That implementation is called a hash array mapped trie (HAMT). All that is needed is a hash function with signature <code class="highlighter-rouge">(object) =&gt; int32</code>. To store a key-value pair, we call <code class="highlighter-rouge">hash(key)</code> which results in number, say 1337. Then we store the value at position 1337 in the underlying list. To retrieve a value, <code class="highlighter-rouge">hash(key)</code> key is called, we get 1337 as the has code and retrieve the value stored at position 1337.<br />
+In order to avoid having to initialise an array of size 2³², traditional implementations use a concept called buckets. A bucket stores values in a range of the hash space. The following illustration shows you can divide a hash space of 32 into 4 buckets.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bucket       1        2       3        4
+        |--------|--------|--------|--------|
+hash        0-7     8-15    16-23     24-31
+</code></pre>
+</div>
+
+<p>This has the advantage that only a list of size 4 needs to be initialised instead of 32. However, if there are multiple values in the same bucket, the hashes of all existing values in the bucket need to be recomputed on both storing and retrieval operations. For example, if a value <code class="highlighter-rouge">A</code> has a hash code of <code class="highlighter-rouge">9</code> it will be put into bucket <code class="highlighter-rouge">2</code>. If another value, <code class="highlighter-rouge">B</code>, has a hash code of <code class="highlighter-rouge">15</code> it will also end up in bucket <code class="highlighter-rouge">2</code>. But in order to make sure it’s not already there, the hash code of <code class="highlighter-rouge">A</code> needs to be recomputed. Because that’s expensive, the buckets have to be resized once there are too many values in there. The resizing operation is again very expensive.<br />
+HAMTs don’t need this kind of abstraction and can grow organically. In order to do so we start using the least significant bits instead of the most significant ones to define the position of an element in the tree. What that means is we start from the right side of the bitmask instead of the left. Consider a map where The Lion King characters are being stored.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/hamt_1.png" alt="HAMT 1" /></p>
+
+<p>If Simba needs to be stored with his name as the key, the following happens.</p>
+<ol>
+  <li>`hash(“Simba”) = 52 = 110100</li>
+  <li>The two least significant bits are taken (the first two bits from the right): <code class="highlighter-rouge">00</code></li>
+  <li>We look at position <code class="highlighter-rouge">00</code> in the root node. Nothing is there so we can store it.</li>
+</ol>
+
+<p>Retrieval works in a similar manner. Then we add Timon, <code class="highlighter-rouge">hash("Timon") = 18 = 010010</code>, nothing at position <code class="highlighter-rouge">10</code> in the root node so we just add it. Next is, of course, Pumbaa. So we do <code class="highlighter-rouge">hash("Pumbaa") = 10 = 001010</code>. Oops, position <code class="highlighter-rouge">10</code> is already used up by Timon. That’s not a problem. Remember, the root node has to be recreated anyway since we’re still talking about immutable persistent data structures. So we can just do the following.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/hamt_2.png" alt="HAMT 2" /></p>
+
+<p>This way a map can be gracefully grown. At position <code class="highlighter-rouge">10</code> of the root node where the conflict arised we replace the entry with a reference to another array. If a level needs to be added, more bits of the bitmask are needed to find the value associated with a key. For Timon and Pumba it is now the 4 least significant bits, for Simba still only 2.<br />
+While insert and delete operations still have comparable complexity to the bitmap vector trie we face a different problem with the HAMT. Memory usage. A good hash function will return evenly distributed hashes over the whole hash range. While that is a desired property, it poses a problem. After inserting some elements we’ll end up with a very sparsely populated tree, which means that there will be a lot of arrays in memory with only a few entries. If we use arrays of size 32 and there is only 1 entry in an array, we waste almost 97% of the allocated memory. See the following example.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/hamt_sparse.png" alt="Sparse HAMT" /></p>
+
+<p>In order for the HAMT to be usable in practice the memory usage has to be reduced drastically.</p>
+
+<h3 id="compression">Compression</h3>
+
+<p>Phil Bagwell suggested compressing the information in each node of the trie to reduce memory consumption.<sup id="fnref:5"><a href="#fn:5" class="footnote">5</a></sup> The compression works by storing the bitmask of an n-bit integer to indicate which slots of the array that stores references to the child elements of the node are used. The following example shows how a node from the previous example can be compressed.</p>
+
+<p><img src="http://localhost:4000/assets/2017_ipd/hamt_compress.png" alt="Compressed HAMT" /></p>
+
+<p>The bitmask has the size of the amount of elements that can be stored in a node, which is 4 in this example or 32 in most real world implementations. Every bit set to 1 indicates that the element at the according position in the original array would have been present. This way we only have to count the 1s and initialize an array of a size that corresponds to the sum of 1s. The first 1 corresponds to the first element of the array, the second to the second element, and so on. So we can save the space all the empty array elements wasted, at the cost of 32bit per node.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Persistent data structures preserve previous states after update operations, hence the name persistent. This property makes data structures effectively immutable and thus very well suited in concurrent environmens. The usage of a trie structure enables structural sharing, i.e. large parts of the data structure can be be safely shared between different versions. Performance is comparable to conventional mutable data structures where operations are in-place modifications. Update operations on immutable persistent data structures as described in this post have a worst-case time complexity of log32n, which is 2 for 1’000 and 7 for a 1’000’000’000 elements. This is so close to constant time that no difference in performance will be noticable in most applicatoins.</p>
+
+<h1 id="other-resources">Other Resources</h1>
+<p><a href="https://www.youtube.com/watch?v=I7IdS-PbEgI&amp;feature=youtu.be">React.js Conf 2015 - Immutable Data and React</a>.<br />
+Good talk by Lee Byron, the author of immutables.js. Lots of visual and code examples on how immutable persistent data structures work.</p>
+
+<p><a href="http://homepages.cwi.nl/~jurgenv/papers/PhDThesis_Michael_Steindorfer.pdf">Michael J. Steindorfer, <em>Efficient Immutable Collections</em></a><br />
+PhD thesis of Michael J. Steindorfer exploring immutable persistent data structures beyond HAMTs.</p>
+
+<p><a href="https://github.com/scala/scala/tree/2.12.x/src/library/scala/collection/immutable">Scala immutable collections</a><br />
+Implementations of Scala’s immutable collections.</p>
+
+<h1 id="references">References</h1>
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>The Value of Values with Rich Hickey <a href="https://www.youtube.com/watch?v=-6BsiVyC1kM">https://www.youtube.com/watch?v=-6BsiVyC1kM</a>&nbsp;<a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:2">
+      <p>Scala Vector <a href="http://www.scala-lang.org/api/2.12.1/scala/collection/immutable/Vector.html">http://www.scala-lang.org/api/2.12.1/scala/collection/immutable/Vector.html</a>&nbsp;<a href="#fnref:2" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:3">
+      <p>OpenJDK ArrayList <a href="http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/tip/src/share/classes/java/util/ArrayList.java">http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/tip/src/share/classes/java/util/ArrayList.java</a>&nbsp;<a href="#fnref:3" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:4">
+      <p>Java 8 ArrayList <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html">https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html</a>&nbsp;<a href="#fnref:4" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:5">
+      <p>Phil Bagwell, <em>Ideal Hash Trees</em> <a href="https://idea.popcount.org/2012-07-25-introduction-to-hamt/idealhashtrees.pdf">https://idea.popcount.org/2012-07-25-introduction-to-hamt/idealhashtrees.pdf</a>&nbsp;<a href="#fnref:5" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </div>
+  
+    <!-- Previous / Next Buttons -->
+    <div class="pagenav">
+		
+		
+		</div>
+
+		<!-- Disqus comments view -->
+		
+		<div class="post-disqus">
+				<section id="disqus_thread"></section>
+				<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables */
+
+var disqus_config = function () {
+  this.page.url = /2017/09/immutable-persistent-data-structures;  // Replace PAGE_URL with your page's canonical URL variable
+  this.page.identifier = /2017/09/immutable-persistent-data-structures; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://roberterdin-github-io.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+		</div>
+		
+</article>
+
+    </div>
+    <footer class="c-page__footer">
+    <p>&copy; Robert Erdin 2017</p>
+    <p><a href="https://github.com/roberterdin">Github</a></p>
+</footer>
+
+</div>
+
+        </main>
+    
+    </body>
+</html>
