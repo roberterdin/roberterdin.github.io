@@ -137,6 +137,10 @@ Persistent data structures preserve previous states after update operations, hen
 
 
 # Other Resources
+
+[Vavr](http://www.vavr.io/)  
+Vavr is a functional library for Java. It provides immutable persistent collections and the necessary functions and control structures to operate on the values within the collections.
+
 [React.js Conf 2015 - Immutable Data and React](https://www.youtube.com/watch?v=I7IdS-PbEgI&feature=youtu.be).  
 Good talk by Lee Byron, the author of immutables.js. Lots of visual and code examples on how immutable persistent data structures work.
 

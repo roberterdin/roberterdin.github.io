@@ -158,6 +158,10 @@ While insert and delete operations still have comparable complexity to the bitma
 <p>Persistent data structures preserve previous states after update operations, hence the name persistent. This property makes data structures effectively immutable and thus very well suited in concurrent environmens. The usage of a trie structure enables structural sharing, i.e. large parts of the data structure can be be safely shared between different versions. Performance is comparable to conventional mutable data structures where operations are in-place modifications. Update operations on immutable persistent data structures as described in this post have a worst-case time complexity of log32n, which is 2 for 1’000 and 7 for a 1’000’000’000 elements. This is so close to constant time that no difference in performance will be noticable in most applicatoins.</p>
 
 <h1 id="other-resources">Other Resources</h1>
+
+<p><a href="http://www.vavr.io/">Vavr</a><br />
+Vavr is a functional library for Java. It provides immutable persistent collections and the necessary functions and control structures to operate on the values within the collections.</p>
+
 <p><a href="https://www.youtube.com/watch?v=I7IdS-PbEgI&amp;feature=youtu.be">React.js Conf 2015 - Immutable Data and React</a>.<br />
 Good talk by Lee Byron, the author of immutables.js. Lots of visual and code examples on how immutable persistent data structures work.</p>
 
