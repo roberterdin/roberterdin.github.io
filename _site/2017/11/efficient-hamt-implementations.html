@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Efficient HAMT Implementations - Robert Erdin</title>
+    <meta name="description" content="This post focuses on the efficient implementations of Hash Array Mapped Tries (HAMT), an immutable persistent data structure, in the JVM. For an introduction...">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Mono|Roboto:300,400,900,400italic' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="canonical" href="http://localhost:4000/2017/11/efficient-hamt-implementations">
+    <link rel="alternate" type="application/rss+xml" title="Robert Erdin" href="http://localhost:4000/feed.xml">
+<script src="http://127.0.0.1:35729/livereload.js"></script></head>
+
+    <body>
+        <main class="u-container">
+        <div class="c-page">
+    <header class="c-page__header">
+    <h1><code>Robert Erdin</code></h1>
+
+    
+    <p>
+        <a href="/">Home</a><span
+          class="u-separate"></span> <a href="/projects/">Projects</a><span class="u-separate"></span> <a href="/about/">About</a><span class="u-separate"></span><a href="/feed.xml">RSS</a>
+    </p>
+</header>
+
+    <div class="c-page__main">
+    <article class="c-article">
+    <header class="c-article__header">
+        <h1 class="c-article__title">Efficient HAMT Implementations</h1>
+        <p class="c-article__time"><time datetime="2017-11-05T00:00:00+00:00" itemprop="datePublished">Nov 5, 2017</time></p>
+    </header>
+    
+    <!-- Post Tags -->
+    <ul class="c-tags">
+    
+    </ul>
+
+    <div class="c-article__main">
+        <p>This post focuses on the efficient implementations of Hash Array Mapped Tries (HAMT), an immutable persistent data structure, in the JVM. For an introduction to immutable persistent data strucutres, have a look at <a href="http://localhost:4000/2017/09/immutable-persistent-data-structures">this post</a> or resort to Wikipedia. Most of this post is based on <a href="https://michael.steindorfer.name/publications/oopsla15.pdf">this paper</a>. As a short recap. Persistent data structures preserve previous states after update operations, hence the name persistent. This property makes data structures effectively immutable and thus very well suited in concurrent environmens. The usage of a trie structure enables structural sharing, i.e. large parts of the data structure can be be safely shared between different versions.<br />
+[Short HAMT Recap?]</p>
+
+<h1 id="compact-vs-expanded-representation">Compact vs. Expanded Representation</h1>
+<p>The principle design choice in the implementation of a HAMT is whether to store values in internal nodes of the trie as was suggested in the original design by Phil Bagwell<sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup>, or in leaf nodes only. Consider an example with the following three objects.</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">hash</span><span class="o">(</span><span class="s">"Simba"</span><span class="o">)</span> <span class="k">=</span> <span class="mi">52</span> <span class="k">=</span> <span class="mi">0</span><span class="n">b110100</span>
+<span class="n">hash</span><span class="o">(</span><span class="s">"Timon"</span><span class="o">)</span> <span class="k">=</span> <span class="mi">18</span> <span class="k">=</span> <span class="mi">0</span><span class="n">b010010</span>
+<span class="n">hash</span><span class="o">(</span><span class="s">"Pumba"</span><span class="o">)</span> <span class="k">=</span> <span class="mi">10</span> <span class="k">=</span> <span class="mi">0</span><span class="n">b001010</span>
+</code></pre>
+</div>
+<p>The following image shows how the HAMT is constructed when values are stored in leaf nodes only (a) as compared to the compact representation where values can also be stored in internal nodes (b).
+<img src="http://localhost:4000/assets/2017_hamt/hamt_layout.png" alt="HAMT Layouts" />
+The compact representation (b) is more efficient in terms of memory due to the absence of the leaf nodes which results in a significantly lower memory footprint. On top of that it also increases memory locality because there are less levels of indirection by omitting the intermediary leaf nodes.<br />
+The implementation where values are stored in leaf nodes separate from inner prefix nodes (a) has it’s advantages too. The leafs allow for additional information to be stored along with the actual elements. Scala, for example, memorises the hash codes of the elements inside the leafs. This allows for several runtime optiminisations, namely fast failing on negative lookups and avoiding recalculation of hash codes up prefix expansion.
+Let’s say “Rafiki” is retrieved, where <code class="highlighter-rouge">hash("Rafiki") = 44 = 0b101100</code>. The two least significant bits <code class="highlighter-rouge">00</code> are taken and then, in</p>
+
+<p>case (a):</p>
+<ol>
+  <li>Traverse to position <code class="highlighter-rouge">00</code> in the root array ==&gt; leaf node</li>
+  <li>Compare with stored hash in leaf</li>
+  <li>no match</li>
+</ol>
+
+<p>case (b):</p>
+<ol>
+  <li>Traverse to position <code class="highlighter-rouge">00</code> in the root array ==&gt; value</li>
+  <li>Calculate hash code of value ==&gt; <code class="highlighter-rouge">hash("Simba") = 52 = 0b110100</code></li>
+  <li>Compare hash codes</li>
+  <li>no match</li>
+</ol>
+
+<p>The same happens if “Rafiki” is inserted. The prefix at position <code class="highlighter-rouge">00</code> of the root node needs to be expanded in order to make space for both objects. In case (b), the hash code of “Simba” needs to be recalculated to know where to store the object in the new array whereas in case (a) the hash code is already known and the object can be inserted straight away. Calculating hash codes is potentially very expensive and the time it takes to recalculate those can be traded for higher memory usage.<br />
+If memory usage is the primary concern, the compact implementation (b) is the better choice whereas the expaned design (a) should be chosen when the runtime of operations is more important. Intrestingly, the designers of Clojure have chosen the former and of Scala the latter approach in their default collection implementations<sup id="fnref:2"><a href="#fn:2" class="footnote">2</a></sup>.</p>
+
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
+		<span class="kt">int</span> <span class="n">bitmap</span><span class="o">;</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">contentArray</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
+		<span class="kt">int</span> <span class="n">bitmap</span><span class="o">;</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">contentArray</span><span class="o">;</span>
+	<span class="o">}</span>
+	<span class="kd">class</span> <span class="nc">HamtLeaf</span><span class="o">{</span>
+		<span class="n">String</span> <span class="n">hashCode</span><span class="o">;</span>
+		<span class="n">V</span> <span class="n">value</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>So far the implementations are sufficient to implement a HAMT-based set. How do the two major designs described so far translate to a map implementation?</p>
+
+<h1 id="hamt-based-maps">HAMT-based Maps</h1>
+
+<p>Implementing a map with the expanded design where all values are in leaf nodes requires no major changes. All that has to be added is a field containing the value assiciated with the key.</p>
+
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
+		<span class="kt">int</span> <span class="n">bitmap</span><span class="o">;</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">contentArray</span><span class="o">;</span>
+	<span class="o">}</span>
+	<span class="kd">class</span> <span class="nc">HamtLeaf</span><span class="o">{</span>
+		<span class="n">String</span> <span class="n">hashCode</span><span class="o">;</span>
+		<span class="n">K</span> <span class="n">key</span><span class="o">;</span>
+		<span class="n">V</span> <span class="n">value</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Map implementation with compact representation are slightly more tricky. The intermediary nodes need a place to store the values associated with the keys. One way to achieve that is to double the size of the content array in the nodes.</p>
+
+<h1 id="references">References</h1>
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>Phil Bagwell, <em>Ideal Hash Trees</em> <a href="https://idea.popcount.org/2012-07-25-introduction-to-hamt/idealhashtrees.pdf">https://idea.popcount.org/2012-07-25-introduction-to-hamt/idealhashtrees.pdf</a>&nbsp;<a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:2">
+      <p>As of version 2.12 and 1.8 for Scala and Clojure, respectively.&nbsp;<a href="#fnref:2" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </div>
+  
+    <!-- Previous / Next Buttons -->
+    <div class="pagenav">
+		
+        <div class="wrapper" id="left">
+          <small><b>Previous</b> Sep 21, 2017</small>
+          <br>
+          <a class="no-hov" href="/2017/09/immutable-persistent-data-structures">&laquo; Immutable Persistent Data Structures</a>
+        </div>
+		
+		
+		</div>
+
+		<!-- Disqus comments view -->
+		
+		<div class="post-disqus">
+				<section id="disqus_thread"></section>
+				<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables */
+
+var disqus_config = function () {
+  // this.page.url = /2017/11/efficient-hamt-implementations;  // Replace PAGE_URL with your page's canonical URL variable
+  this.page.identifier = "/2017/11/efficient-hamt-implementations"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://roberterdin-github-io.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+		</div>
+		
+</article>
+
+    </div>
+    <footer class="c-page__footer">
+    <p>&copy; Robert Erdin 2017</p>
+    <p><a href="https://github.com/roberterdin">Github</a></p>
+</footer>
+
+</div>
+
+        </main>
+    
+    </body>
+</html>
