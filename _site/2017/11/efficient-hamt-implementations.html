@@ -53,7 +53,7 @@
 <p>The following image shows how the HAMT is constructed when values are stored in leaf nodes only (a) as compared to the compact representation where values can also be stored in internal nodes (b).
 <img src="http://localhost:4000/assets/2017_hamt/hamt_layout.png" alt="HAMT Layouts" />
 The compact representation (b) is more efficient in terms of memory due to the absence of the leaf nodes which results in a significantly lower memory footprint. On top of that it also increases memory locality because there are less levels of indirection by omitting the intermediary leaf nodes.<br />
-The implementation where values are stored in leaf nodes separate from inner prefix nodes (a) has it’s advantages too. The leafs allow for additional information to be stored along with the actual elements. Scala, for example, memorises the hash codes of the elements inside the leafs. This allows for several runtime optiminisations, namely fast failing on negative lookups and avoiding recalculation of hash codes up prefix expansion.
+The implementation where values are stored in leaf nodes separate from inner prefix nodes (a) has it’s advantages too. The leafs allow for additional information to be stored along with the actual elements. Scala, for example, memorises the hash codes of the elements inside the leafs. This allows for several runtime optiminisations, namely fast failing on negative lookups and avoiding recalculation of hash codes upon prefix expansion.
 Let’s say “Rafiki” is retrieved, where <code class="highlighter-rouge">hash("Rafiki") = 44 = 0b101100</code>. The two least significant bits <code class="highlighter-rouge">00</code> are taken and then, in</p>
 
 <p>case (a):</p>
@@ -71,36 +71,39 @@ Let’s say “Rafiki” is retrieved, where <code class="highlighter-rouge">has
   <li>no match</li>
 </ol>
 
-<p>The same happens if “Rafiki” is inserted. The prefix at position <code class="highlighter-rouge">00</code> of the root node needs to be expanded in order to make space for both objects. In case (b), the hash code of “Simba” needs to be recalculated to know where to store the object in the new array whereas in case (a) the hash code is already known and the object can be inserted straight away. Calculating hash codes is potentially very expensive and the time it takes to recalculate those can be traded for higher memory usage.<br />
+<p>The same happens if “Rafiki” is inserted. The prefix at position <code class="highlighter-rouge">00</code> of the root node needs to be expanded in order to make space for both objects. In case (b), the hash code of “Simba” needs to be recalculated to know where to store the object in the new array whereas in case (a) the hash code is already known and the object can be inserted straight away. Calculating hash codes is potentially very expensive and the time it takes to recalculate can be traded for higher memory usage.<br />
 If memory usage is the primary concern, the compact implementation (b) is the better choice whereas the expaned design (a) should be chosen when the runtime of operations is more important. Intrestingly, the designers of Clojure have chosen the former and of Scala the latter approach in their default collection implementations<sup id="fnref:2"><a href="#fn:2" class="footnote">2</a></sup>.</p>
 
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
-	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
-		<span class="kt">int</span> <span class="n">bitmap</span><span class="o">;</span>
-		<span class="n">Object</span><span class="o">[]</span> <span class="n">contentArray</span><span class="o">;</span>
-	<span class="o">}</span>
-<span class="o">}</span>
-</code></pre>
-</div>
+<p>Following is the skeleton that is the basis for implementing a HAMT based collection in both the expanded and compact variations.</p>
 
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="c1">// expanded representation (a)</span>
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
 	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
 		<span class="kt">int</span> <span class="n">bitmap</span><span class="o">;</span>
 		<span class="n">Object</span><span class="o">[]</span> <span class="n">contentArray</span><span class="o">;</span>
 	<span class="o">}</span>
 	<span class="kd">class</span> <span class="nc">HamtLeaf</span><span class="o">{</span>
-		<span class="n">String</span> <span class="n">hashCode</span><span class="o">;</span>
+		<span class="kt">int</span> <span class="n">hashCode</span><span class="o">;</span>
 		<span class="n">V</span> <span class="n">value</span><span class="o">;</span>
 	<span class="o">}</span>
 <span class="o">}</span>
 </code></pre>
 </div>
-
-<p>So far the implementations are sufficient to implement a HAMT-based set. How do the two major designs described so far translate to a map implementation?</p>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="c1">// Compact representation (b)</span>
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
+		<span class="kt">int</span> <span class="n">bitmap</span><span class="o">;</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">contentArray</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>An <code class="highlighter-rouge">instanceof</code> operation is needed to distinguish if an an array slot in question holds a a value (or <code class="highlighter-rouge">HamtLeaf</code> in case of (a)) or a sub-node reference.<br />
+So far the implementations are sufficient to implement a HAMT-based set. How do the two major designs described so far translate to a map implementation?</p>
 
 <h1 id="hamt-based-maps">HAMT-based Maps</h1>
 
-<p>Implementing a map with the expanded design where all values are in leaf nodes requires no major changes. All that has to be added is a field containing the value assiciated with the key.</p>
+<p>Implementing a map with the expanded design (a) where all values are in leaf nodes requires no major changes. All that has to be added is a field containing the value assiciated with the key.</p>
 
 <div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
 	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
@@ -108,7 +111,7 @@ If memory usage is the primary concern, the compact implementation (b) is the be
 		<span class="n">Object</span><span class="o">[]</span> <span class="n">contentArray</span><span class="o">;</span>
 	<span class="o">}</span>
 	<span class="kd">class</span> <span class="nc">HamtLeaf</span><span class="o">{</span>
-		<span class="n">String</span> <span class="n">hashCode</span><span class="o">;</span>
+		<span class="kt">int</span> <span class="n">hashCode</span><span class="o">;</span>
 		<span class="n">K</span> <span class="n">key</span><span class="o">;</span>
 		<span class="n">V</span> <span class="n">value</span><span class="o">;</span>
 	<span class="o">}</span>
@@ -116,7 +119,27 @@ If memory usage is the primary concern, the compact implementation (b) is the be
 </code></pre>
 </div>
 
-<p>Map implementation with compact representation are slightly more tricky. The intermediary nodes need a place to store the values associated with the keys. One way to achieve that is to double the size of the content array in the nodes.</p>
+<p>Map implementation with compact representation (b) are slightly more tricky. The intermediary nodes need a place to store the values associated with the keys. One way to achieve that is to double the size of the content array in the nodes and store references to values next to each key. The index is multiplied by 2 to skip over the extra slots holding the value.</p>
+
+<p><img src="http://localhost:4000/assets/2017_hamt/map_node.png" alt="HAMT Node" /></p>
+
+<p>However, this brings some inefficiencies. Namely what to do with the key slot of a key/value pair if the value is a reference to a sub-node. At this point all that can be done is leave that slot empty. On top of that there still needs to be an <code class="highlighter-rouge">instanceof</code> check (or null check on the key slot) to figure out whether there is an actual value or a sub-node.</p>
+
+<h1 id="champ">CHAMP</h1>
+<p>To overcome the inefficiencies described, Michael Steindorfer proposed the Compressed Hash-Array Mapped Prefix-tree (CHAMP). He proposed to split the single untyped array in a HAMT node into two typed arrays; one array holding sub-node references and the other array holding values. Tje need for using <code class="highlighter-rouge">instanceof</code> is removed by introducing an extra bitmap that makes the separation between sub-nodes and internal values explicit.</p>
+
+<p>A naive implementation of CHAMP would look as follows.</p>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="c1">// Compact representation (b)</span>
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">HAMT</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+	<span class="kd">class</span> <span class="nc">HamtNode</span><span class="o">{</span>
+		<span class="kt">int</span> <span class="n">datamap</span><span class="o">;</span> <span class="c1">// absent or value</span>
+		<span class="kt">int</span> <span class="n">nodemap</span><span class="o">;</span> <span class="c1">// absent or sub-node</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">valueArray</span><span class="o">;</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">nodeArray</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
 
 <h1 id="references">References</h1>
 <div class="footnotes">
@@ -173,7 +196,7 @@ s.setAttribute('data-timestamp', +new Date());
 
     </div>
     <footer class="c-page__footer">
-    <p>&copy; Robert Erdin 2017</p>
+    <p>&copy; Robert Erdin 2018</p>
     <p><a href="https://github.com/roberterdin">Github</a></p>
 </footer>
 
